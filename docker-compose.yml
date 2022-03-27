@@ -2,34 +2,41 @@ version: '3'
 
 services:
   php:
-    container_name: marek_php
-    build: ./docker-config/php
+    container_name: php
+    build: ./configs/php
     volumes:
       - ./code:/workspace
 
   nginx:
-    container_name: marek_nginx
+    container_name: nginx
     depends_on:
       - php
     image: nginx:latest
     links:
       - php
     volumes:
-      - ./docker-config/nginx/bin:/scripts:ro
-      - ./docker-config/nginx/conf:/etc/nginx/conf.d
+      - ./configs/nginx/bin:/scripts:ro
+      - ./configs/nginx/conf:/etc/nginx/conf.d
       - ./code:/workspace
     command: /bin/sh /scripts/run.sh
     ports:
-      - 5001:80
+      - 8080:80
     environment:
       FPM_BACKEND: php
 
   varnish:
-    container_name: marek_varnish
+    image: varnish:stable
+    container_name: varnish
+    volumes:
+      - "./configs/varnish/varnish.vcl:/etc/varnish/default.vcl"
     depends_on:
       - nginx
-    build: ./docker-config/varnish
     links:
       - nginx
+    tmpfs:
+      - /var/lib/varnish:exec
+    environment:
+      - VARNISH_SIZE=1G
+    command: "-p default_keep=300"
     ports:
-      - 5002:6081
+      - 80:80
