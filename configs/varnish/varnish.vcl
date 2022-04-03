@@ -9,7 +9,7 @@ backend default {
                 .interval = 5s;
                 .timeout = 3s;
                 .window = 5;
-                .threshhold = 3;
+                .threshold = 3;
         }
 }
 
