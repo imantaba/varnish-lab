@@ -1,5 +1,6 @@
 vcl 4.1;
 
+import std;
 
 backend default {
         .host = "127.0.0.1";
@@ -25,39 +26,46 @@ sub vcl_recv {
                 set req.http.Host = "beta.garandwebtech.com";
         }
         
-        if ( req.backend.healthy) {
+        if ( std.healthy(req.backend_hint) ) {
                 set req.grace = 30s;
         } else {
-                set req.grace = 10m ;
+                set req.grace = 10m;
         }
         
-        if ( req.url ~ "^/admin") {
+        if ( req.url ~ "^/admin" ) {
                 unset req.http.Cookie;
         }
         
-        if ( req.request == "PURGE" ) {
-                if ( !client.p ~ purge ) {
-                        error 405 "Not allowed to purge";
+        if ( req.method == "PURGE" ) {
+                if ( !client.ip ~ purge ) {
+                        return (synth(405, "Not allowed"));
                 }
                 return (lookup);
         }
 }
 
 sub vcl_hit {
-        if ( req.request == "PURGE") {
-                purge;
-                error 200 "Purged (Hit).";
-        }
+    if (obj.ttl >= 0s) {
+        // A pure unadultered hit, deliver it
+        return (deliver);
+    }
+    if (obj.ttl + obj.grace > 0s) {
+        // Object is in grace, deliver it
+        // Automatically triggers a background fetch
+        return (deliver);
+    }
+    // fetch & deliver once we get the result
+    return (fetch);
 }
 
 sub vcl_miss {
-        if ( req.request == "PURGE") {
-                purge;
-                error 200 "Purged (Miss).";
+        if ( req.method == "PURGE" ) {
+                return (purge);
+                return (synth(200, "Purged (Miss)."));
         }
 }
 
-sub_vcl_fetch {
+sub vcl_backend_response {
         set beresp.grace = 30m;
         if ( req.url ~ "^/admin" ) {
                 unset beresp.http.Set-Cookie;
