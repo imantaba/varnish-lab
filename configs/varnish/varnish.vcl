@@ -14,12 +14,14 @@ backend default {
 }
 
 acl purge {
-        "APP_IP";
+        "127.0.0.1";
+        "192.168.43.171";
+        "varnish";
 }
 
 sub vcl_recv {
 
-        if ( req.http.Host == "ww.beta.garandwebtech.com" ) {
+        if ( req.http.Host == "www.beta.garandwebtech.com" ) {
                 set req.http.Host = "beta.garandwebtech.com";
         }
         
