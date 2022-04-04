@@ -72,7 +72,11 @@ sub vcl_hit {
 
 
 sub vcl_miss {
-        return (fetch);
+  # Called after a cache lookup if the requested document was not found in the cache. Its purpose
+  # is to decide whether or not to attempt to retrieve the document from the backend, and which
+  # backend to use.
+
+  return (fetch);
 }
 
 sub vcl_backend_response {
@@ -123,6 +127,9 @@ sub vcl_backend_response {
 
   # Allow stale content, in case the backend goes down.
   # make Varnish keep all objects for 6 hours beyond their TTL
+  # this means that varnish will actually allow the content to remain in the cache for 6 hour after expiry time has passed and this setting applies at the
+  # time that the content is loaded from backend but even that content is kept in the cache varnish actually will not send it to the users if it passed the 
+  # expiry time
   set beresp.grace = 6h;
 
   return (deliver);
