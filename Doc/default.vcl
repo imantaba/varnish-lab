@@ -1,5 +1,5 @@
 vcl 4.1;
-# Based on: https://github.com/mattiasgeniar/varnish-6.0-configuration-templates/blob/master/default.vcl
+# Varnsih config template version 6
 
 import std;
 import directors;
