@@ -1,0 +1,6 @@
+- hosts: varnish
+  become: yes
+  vars_files:
+    - ansible-role-varnish/vars/main.yml
+  roles:
+    - ansible-role-varnish
