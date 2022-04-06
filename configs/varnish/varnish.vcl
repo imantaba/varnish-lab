@@ -44,7 +44,7 @@ sub vcl_init {
 
 sub vcl_recv {
         set req.backend_hint = vdir.backend();
-        
+
         if ( req.http.Host == "www.beta.garandwebtech.com" ) {
                 set req.http.Host = "beta.garandwebtech.com";
         }
@@ -52,7 +52,7 @@ sub vcl_recv {
         if ( std.healthy(req.backend_hint) ) {
                 set req.grace = 30s;
         } else {
-                set req.grace = 10m;
+                set req.grace = 1m;
         }
         
         if ( req.url ~ "^/admin" ) {
@@ -151,7 +151,7 @@ sub vcl_backend_response {
   # this means that varnish will actually allow the content to remain in the cache for 6 hour after expiry time has passed and this setting applies at the
   # time that the content is loaded from backend but even that content is kept in the cache varnish actually will not send it to the users if it passed the 
   # expiry time
-  set beresp.grace = 6h;
+  set beresp.grace = 3m;
 
   return (deliver);
 }
