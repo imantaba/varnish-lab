@@ -7,8 +7,8 @@ services:
     volumes:
       - ./code:/workspace
 
-  nginx:
-    container_name: nginx
+  nginx1:
+    container_name: nginx1
     depends_on:
       - php
     image: nginx:latest
@@ -23,6 +23,24 @@ services:
       - 8080:80
     environment:
       FPM_BACKEND: php
+
+  nginx2:
+    container_name: nginx2
+    depends_on:
+      - php
+    image: nginx:latest
+    links:
+      - php
+    volumes:
+      - ./configs/nginx/bin:/scripts:ro
+      - ./configs/nginx/conf:/etc/nginx/conf.d
+      - ./code:/workspace
+    command: /bin/sh /scripts/run.sh
+    ports:
+      - 8081:80
+    environment:
+      FPM_BACKEND: php
+
 
   varnish:
     image: varnish:stable

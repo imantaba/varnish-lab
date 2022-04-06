@@ -4,8 +4,20 @@ import std;
 import directors;
 
 
-backend default {
-        .host = "nginx";
+backend nginx1 {
+        .host = "nginx1";
+        .port = "80";
+        .probe = {
+                .url = "/";
+                .interval = 5s;
+                .timeout = 3s;
+                .window = 5;
+                .threshold = 3;
+        }
+}
+
+backend nginx2 {
+        .host = "nginx2";
         .port = "80";
         .probe = {
                 .url = "/";
@@ -22,8 +34,17 @@ acl purge {
         "varnish";
 }
 
-sub vcl_recv {
 
+sub vcl_init {
+    new vdir = directors.round_robin();
+    vdir.add_backend(nginx1);
+    vdir.add_backend(nginx2);
+}
+
+
+sub vcl_recv {
+        set req.backend_hint = vdir.backend();
+        
         if ( req.http.Host == "www.beta.garandwebtech.com" ) {
                 set req.http.Host = "beta.garandwebtech.com";
         }
